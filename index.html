@@ -5,250 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ODA Voice Board</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #ffffff;
-      --bg2: #f5f5f3;
-      --bg3: #eeede8;
-      --text: #1a1a1a;
-      --text2: #666;
-      --text3: #999;
-      --border: rgba(0,0,0,0.12);
-      --border2: rgba(0,0,0,0.22);
-      --radius-md: 8px;
-      --radius-lg: 12px;
+      --bg: #ffffff; --bg2: #f5f5f3; --bg3: #eeede8;
+      --text: #1a1a1a; --text2: #666; --text3: #999;
+      --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+      --radius-md: 8px; --radius-lg: 12px;
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1a1a1a;
-        --bg2: #222;
-        --bg3: #2a2a2a;
-        --text: #f0ece0;
-        --text2: #999;
-        --text3: #666;
-        --border: rgba(255,255,255,0.1);
-        --border2: rgba(255,255,255,0.2);
+        --bg: #1a1a1a; --bg2: #222; --bg3: #2a2a2a;
+        --text: #f0ece0; --text2: #999; --text3: #666;
+        --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
       }
     }
-
-    body {
-      background: var(--bg3);
-      font-family: var(--font);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 2rem 1rem;
-    }
-
+    body { background: var(--bg3); font-family: var(--font); color: var(--text); min-height: 100vh; padding: 2rem 1rem; }
     .container { max-width: 680px; margin: 0 auto; }
 
-    /* 전광판 */
-    .scoreboard {
-      background: #0a0a0a;
-      border-radius: 12px;
-      border: 3px solid #222;
-      margin-bottom: 1.5rem;
-      overflow: hidden;
-    }
-    .sb-header {
-      background: #111;
-      border-bottom: 2px solid #1a1a1a;
-      padding: 8px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .sb-title {
-      font-family: 'Courier New', monospace;
-      font-size: 11px; font-weight: 700;
-      color: #EF9F27; letter-spacing: 0.15em;
-    }
-    .sb-live {
-      display: flex; align-items: center; gap: 6px;
-      font-family: 'Courier New', monospace;
-      font-size: 10px; color: #E24B4A;
-      font-weight: 700; letter-spacing: 0.1em;
-    }
-    .live-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #E24B4A;
-      animation: blink 1s infinite;
-    }
+    .scoreboard { background: #0a0a0a; border-radius: 12px; border: 3px solid #222; margin-bottom: 1.5rem; overflow: hidden; }
+    .sb-header { background: #111; border-bottom: 2px solid #1a1a1a; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .sb-title { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; color: #EF9F27; letter-spacing: 0.15em; }
+    .sb-live { display: flex; align-items: center; gap: 6px; font-family: 'Courier New', monospace; font-size: 10px; color: #E24B4A; font-weight: 700; letter-spacing: 0.1em; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #E24B4A; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-    .sb-ticker-area {
-      padding: 20px 20px 14px;
-      min-height: 100px;
-      display: flex; flex-direction: column; justify-content: center;
-    }
-    .sb-cat-tag {
-      font-family: 'Courier New', monospace;
-      font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
-      color: #EF9F27; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px;
-      transition: opacity 0.3s;
-    }
-    .sb-cat-tag::before {
-      content: ''; display: inline-block;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: currentColor;
-    }
-    .sb-main-text {
-      font-family: 'Courier New', monospace;
-      font-size: 18px; font-weight: 700;
-      color: #f5f0e0; line-height: 1.4;
-      letter-spacing: 0.03em; min-height: 52px;
-      transition: opacity 0.3s;
-    }
+    .sb-ticker-area { padding: 20px 20px 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center; }
+    .sb-cat-tag { font-family: 'Courier New', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: #EF9F27; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; transition: opacity 0.3s; }
+    .sb-cat-tag::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .sb-main-text { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #f5f0e0; line-height: 1.4; letter-spacing: 0.03em; min-height: 52px; transition: opacity 0.3s; }
     .sb-scroll-line { overflow: hidden; padding: 0 0 6px; }
-    .sb-scroll-inner {
-      display: inline-block;
-      animation: marquee 22s linear infinite;
-      padding-left: 100%;
-      color: #555; font-family: 'Courier New', monospace;
-      font-size: 11px; letter-spacing: 0.06em; white-space: nowrap;
-    }
+    .sb-scroll-inner { display: inline-block; animation: marquee 22s linear infinite; padding-left: 100%; color: #555; font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.06em; white-space: nowrap; }
     @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-100%)} }
-
-    .sb-footer {
-      background: #0d0d0d; border-top: 1px solid #1a1a1a;
-      padding: 8px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
+    .sb-footer { background: #0d0d0d; border-top: 1px solid #1a1a1a; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
     .dot-row { display: flex; gap: 4px; }
     .dot { width: 5px; height: 5px; border-radius: 50%; background: #2a2a2a; transition: background 0.3s; }
     .dot.active { background: #EF9F27; }
     .sb-nav { display: flex; gap: 8px; }
-    .nav-btn {
-      background: #1a1a1a; border: 1px solid #2a2a2a;
-      color: #888; font-family: 'Courier New', monospace;
-      font-size: 12px; width: 26px; height: 22px;
-      border-radius: 4px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.1s;
-    }
+    .nav-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; font-family: 'Courier New', monospace; font-size: 12px; width: 26px; height: 22px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
     .nav-btn:hover { background: #222; color: #EF9F27; border-color: #EF9F27; }
     .sb-count { font-family: 'Courier New', monospace; font-size: 10px; color: #555; letter-spacing: 0.1em; }
-
-    .saving-badge {
-      font-family: 'Courier New', monospace; font-size: 10px;
-      color: #3B6D11; letter-spacing: 0.08em;
-      padding: 2px 8px; background: #0f1f0a;
-      border: 1px solid #3B6D11; border-radius: 4px;
-      opacity: 0; transition: opacity 0.3s;
-    }
+    .saving-badge { font-family: 'Courier New', monospace; font-size: 10px; color: #3B6D11; letter-spacing: 0.08em; padding: 2px 8px; background: #0f1f0a; border: 1px solid #3B6D11; border-radius: 4px; opacity: 0; transition: opacity 0.3s; }
     .saving-badge.show { opacity: 1; }
 
-    /* 통계 */
-    .stats-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 8px; margin-bottom: 1.25rem;
-    }
-    .sc {
-      background: var(--bg2);
-      border-radius: var(--radius-md);
-      padding: 10px 12px; text-align: center;
-    }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+    .sc { background: var(--bg2); border-radius: var(--radius-md); padding: 10px 12px; text-align: center; }
     .sc-n { font-size: 20px; font-weight: 500; color: var(--text); }
     .sc-l { font-size: 11px; color: var(--text2); margin-top: 2px; }
 
-    /* 입력 영역 */
     .input-section { margin-bottom: 1rem; }
     .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .input-row textarea {
-      flex: 1; font-size: 14px; padding: 10px 12px;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border2);
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      min-height: 52px; line-height: 1.5; resize: none;
-    }
-    .input-row textarea:focus {
-      outline: none;
-      border-color: #EF9F27;
-      box-shadow: 0 0 0 2px rgba(239,159,39,0.15);
-    }
+    .input-row textarea { flex: 1; font-size: 14px; padding: 10px 12px; border-radius: var(--radius-md); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); font-family: var(--font); min-height: 52px; line-height: 1.5; resize: none; }
+    .input-row textarea:focus { outline: none; border-color: #EF9F27; box-shadow: 0 0 0 2px rgba(239,159,39,0.15); }
     .input-meta { display: flex; gap: 8px; justify-content: flex-end; }
-    .cat-select {
-      height: 36px; width: 140px; font-size: 13px; padding: 0 8px;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border2);
-      background: var(--bg); color: var(--text);
-      font-family: var(--font); cursor: pointer;
-    }
-    .send-btn {
-      height: 36px; padding: 0 16px; font-size: 13px; font-weight: 500;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border2);
-      background: var(--bg); color: var(--text);
-      cursor: pointer; white-space: nowrap; transition: background 0.15s;
-      display: flex; align-items: center; gap: 6px;
-    }
+    .cat-select { height: 36px; width: 140px; font-size: 13px; padding: 0 8px; border-radius: var(--radius-md); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); font-family: var(--font); cursor: pointer; }
+    .send-btn { height: 36px; padding: 0 16px; font-size: 13px; font-weight: 500; border-radius: var(--radius-md); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); cursor: pointer; white-space: nowrap; transition: background 0.15s; display: flex; align-items: center; gap: 6px; }
     .send-btn:hover { background: var(--bg2); }
     .send-btn:active { transform: scale(0.98); }
     .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* 필터 */
-    .filter-row {
-      display: flex; flex-wrap: wrap; gap: 6px;
-      margin-bottom: 1rem; align-items: center;
-    }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; align-items: center; }
     .flabel { font-size: 12px; color: var(--text2); flex-shrink: 0; }
-    .chip {
-      font-size: 12px; padding: 4px 11px; border-radius: 999px;
-      border: 0.5px solid var(--border);
-      background: var(--bg2); color: var(--text2);
-      cursor: pointer; transition: all 0.12s; white-space: nowrap;
-    }
-    .chip.on {
-      background: #0a0a0a; border-color: #EF9F27; color: #EF9F27;
-      font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.05em;
-    }
+    .chip { font-size: 12px; padding: 4px 11px; border-radius: 999px; border: 0.5px solid var(--border); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+    .chip.on { background: #0a0a0a; border-color: #EF9F27; color: #EF9F27; font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.05em; }
 
-    /* 의견 목록 */
     .list-wrap { display: flex; flex-direction: column; gap: 8px; }
-    .op-card {
-      background: var(--bg);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 0.85rem 1rem;
-      display: flex; gap: 10px; align-items: flex-start;
-      animation: fadein 0.35s ease;
-      transition: border-color 0.15s;
-    }
+    .op-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 0.85rem 1rem; display: flex; gap: 10px; align-items: flex-start; animation: fadein 0.35s ease; transition: border-color 0.15s; }
     @keyframes fadein { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
     .op-card:hover { border-color: var(--border2); }
-    .cat-pill {
-      font-size: 11px; padding: 3px 9px; border-radius: 999px;
-      white-space: nowrap; flex-shrink: 0; font-weight: 500; margin-top: 1px;
-      font-family: 'Courier New', monospace; letter-spacing: 0.04em;
-    }
+    .cat-pill { font-size: 11px; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; font-weight: 500; margin-top: 1px; font-family: 'Courier New', monospace; letter-spacing: 0.04em; }
     .op-body { flex: 1; min-width: 0; }
     .op-text { font-size: 14px; color: var(--text); line-height: 1.6; word-break: keep-all; }
     .op-time { font-size: 11px; color: var(--text3); margin-top: 3px; }
-    .like-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text3); font-size: 13px;
-      padding: 4px 6px; border-radius: 6px;
-      display: flex; align-items: center; gap: 4px; flex-shrink: 0;
-      transition: color 0.12s;
-    }
+    .like-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 13px; padding: 4px 6px; border-radius: 6px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; transition: color 0.12s; }
     .like-btn:hover { color: var(--text); }
     .like-btn.liked { color: #D4537E; }
     .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 2rem; }
-    .loading-msg {
-      text-align: center; color: var(--text3); font-size: 13px;
-      padding: 2rem; font-family: 'Courier New', monospace;
-    }
+    .loading-msg { text-align: center; color: var(--text3); font-size: 13px; padding: 2rem; font-family: 'Courier New', monospace; }
   </style>
 </head>
 <body>
 <div class="container">
 
-  <!-- 전광판 -->
   <div class="scoreboard">
     <div class="sb-header">
       <div class="sb-title">ODA VOICE BOARD</div>
@@ -274,14 +113,12 @@
     </div>
   </div>
 
-  <!-- 통계 -->
   <div class="stats-row">
-    <div class="sc"><div class="sc-n" id="total-n">0</div><div class="sc-l">전체 의견</div></div>
-    <div class="sc"><div class="sc-n" id="today-n">0</div><div class="sc-l">오늘 의견</div></div>
+    <div class="sc"><div class="sc-n" id="total-n">—</div><div class="sc-l">전체 의견</div></div>
+    <div class="sc"><div class="sc-n" id="today-n">—</div><div class="sc-l">오늘 의견</div></div>
     <div class="sc"><div class="sc-n" id="top-cat-n">—</div><div class="sc-l">가장 많은 주제</div></div>
   </div>
 
-  <!-- 입력 -->
   <div class="input-section">
     <div class="input-row">
       <textarea id="op-input" placeholder="국제개발협력에 대한 의견을 남겨주세요 (Enter로 제출, Shift+Enter로 줄바꿈)" rows="2"></textarea>
@@ -302,7 +139,6 @@
     </div>
   </div>
 
-  <!-- 필터 -->
   <div class="filter-row">
     <span class="flabel">필터</span>
     <span class="chip on" data-f="전체">전체</span>
@@ -315,7 +151,6 @@
     <span class="chip" data-f="기타">기타</span>
   </div>
 
-  <!-- 목록 -->
   <div class="list-wrap" id="list">
     <div class="loading-msg">▌ 로딩 중...</div>
   </div>
@@ -323,6 +158,10 @@
 </div>
 
 <script>
+  const SUPABASE_URL = 'https://gcupcmajrdnmgdbfhtzq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_VNkyYZyW6BvJMigcGhUf8Q_KQHwOJoN';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   const CAT = {
     '거버넌스':  { bg:'#0d1a2e', border:'#185FA5', text:'#85B7EB' },
     '일자리/노동': { bg:'#16113a', border:'#534AB7', text:'#AFA9EC' },
@@ -333,35 +172,29 @@
     '기타':      { bg:'#1a1a1a', border:'#444',    text:'#888' }
   };
 
-  const STORAGE_KEY = 'oda-voice-opinions-v1';
   let opinions = [];
   let tickerIdx = 0;
   let tickerTimer = null;
   let activeFilter = '전체';
 
   function timeStr(ts) {
-    const diff = Math.floor((Date.now() - ts) / 1000);
+    const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
     if (diff < 60) return '방금 전';
     if (diff < 3600) return Math.floor(diff / 60) + '분 전';
     if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
     return new Date(ts).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
   }
 
-  function loadOpinions() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      opinions = raw ? JSON.parse(raw) : [];
-    } catch(e) { opinions = []; }
+  async function loadOpinions() {
+    const { data, error } = await sb.from('opinions').select('*').order('created_at', { ascending: false });
+    if (!error && data) opinions = data;
     startTicker(); updateStats(); renderList();
   }
 
-  function saveOpinions() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(opinions));
-      const badge = document.getElementById('saving-badge');
-      badge.classList.add('show');
-      setTimeout(() => badge.classList.remove('show'), 1500);
-    } catch(e) {}
+  function showSaved() {
+    const badge = document.getElementById('saving-badge');
+    badge.classList.add('show');
+    setTimeout(() => badge.classList.remove('show'), 1500);
   }
 
   function showTicker(idx) {
@@ -410,7 +243,8 @@
 
   function updateStats() {
     document.getElementById('total-n').textContent = opinions.length;
-    const today = opinions.filter(o => new Date(o.ts).toDateString() === new Date().toDateString()).length;
+    const todayStr = new Date().toDateString();
+    const today = opinions.filter(o => new Date(o.created_at).toDateString() === todayStr).length;
     document.getElementById('today-n').textContent = today;
     if (opinions.length) {
       const counts = {};
@@ -428,39 +262,44 @@
     if (!filtered.length) { el.innerHTML = '<div class="empty">해당 카테고리의 의견이 없습니다</div>'; return; }
     el.innerHTML = filtered.map(op => {
       const c = CAT[op.cat] || CAT['기타'];
-      const gi = opinions.indexOf(op);
       return `<div class="op-card">
         <span class="cat-pill" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};">${op.cat}</span>
         <div class="op-body">
           <div class="op-text">${op.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-          <div class="op-time">${timeStr(op.ts)}</div>
+          <div class="op-time">${timeStr(op.created_at)}</div>
         </div>
-        <button class="like-btn${op.liked ? ' liked' : ''}" data-i="${gi}">
+        <button class="like-btn" data-id="${op.id}" data-likes="${op.likes}">
           <i class="ti ti-heart"></i> ${op.likes}
         </button>
       </div>`;
     }).join('');
     el.querySelectorAll('.like-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const i = +btn.dataset.i;
-        opinions[i].liked = !opinions[i].liked;
-        opinions[i].likes += opinions[i].liked ? 1 : -1;
-        saveOpinions(); renderList();
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const newLikes = parseInt(btn.dataset.likes) + 1;
+        await sb.from('opinions').update({ likes: newLikes }).eq('id', id);
+        const op = opinions.find(o => o.id === id);
+        if (op) op.likes = newLikes;
+        renderList();
       });
     });
   }
 
-  function submit() {
+  async function submit() {
     const input = document.getElementById('op-input');
     const cat = document.getElementById('cat-sel').value;
     const text = input.value.trim();
     if (!text) return;
     const btn = document.getElementById('send-btn');
     btn.disabled = true;
-    opinions.unshift({ text, cat, ts: Date.now(), likes: 0, liked: false });
-    input.value = '';
-    tickerIdx = 0;
-    saveOpinions(); startTicker(); updateStats(); renderList();
+    const { data, error } = await sb.from('opinions').insert([{ text, cat, likes: 0 }]).select().single();
+    if (!error && data) {
+      opinions.unshift(data);
+      input.value = '';
+      tickerIdx = 0;
+      showSaved();
+      startTicker(); updateStats(); renderList();
+    }
     btn.disabled = false;
   }
 
@@ -480,6 +319,15 @@
   });
 
   loadOpinions();
+
+  // 30초마다 새 의견 자동 갱신
+  setInterval(async () => {
+    const { data } = await sb.from('opinions').select('*').order('created_at', { ascending: false });
+    if (data && data.length !== opinions.length) {
+      opinions = data;
+      updateStats(); renderList(); updateScrollBar();
+    }
+  }, 30000);
 </script>
 </body>
 </html>
