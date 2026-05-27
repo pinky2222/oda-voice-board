@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ODA Voice Board</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f5f3;
+      --bg3: #eeede8;
+      --text: #1a1a1a;
+      --text2: #666;
+      --text3: #999;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a1a;
+        --bg2: #222;
+        --bg3: #2a2a2a;
+        --text: #f0ece0;
+        --text2: #999;
+        --text3: #666;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.2);
+      }
+    }
+
+    body {
+      background: var(--bg3);
+      font-family: var(--font);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    /* 전광판 */
+    .scoreboard {
+      background: #0a0a0a;
+      border-radius: 12px;
+      border: 3px solid #222;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .sb-header {
+      background: #111;
+      border-bottom: 2px solid #1a1a1a;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sb-title {
+      font-family: 'Courier New', monospace;
+      font-size: 11px; font-weight: 700;
+      color: #EF9F27; letter-spacing: 0.15em;
+    }
+    .sb-live {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 10px; color: #E24B4A;
+      font-weight: 700; letter-spacing: 0.1em;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #E24B4A;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .sb-ticker-area {
+      padding: 20px 20px 14px;
+      min-height: 100px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .sb-cat-tag {
+      font-family: 'Courier New', monospace;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+      color: #EF9F27; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+      transition: opacity 0.3s;
+    }
+    .sb-cat-tag::before {
+      content: ''; display: inline-block;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: currentColor;
+    }
+    .sb-main-text {
+      font-family: 'Courier New', monospace;
+      font-size: 18px; font-weight: 700;
+      color: #f5f0e0; line-height: 1.4;
+      letter-spacing: 0.03em; min-height: 52px;
+      transition: opacity 0.3s;
+    }
+    .sb-scroll-line { overflow: hidden; padding: 0 0 6px; }
+    .sb-scroll-inner {
+      display: inline-block;
+      animation: marquee 22s linear infinite;
+      padding-left: 100%;
+      color: #555; font-family: 'Courier New', monospace;
+      font-size: 11px; letter-spacing: 0.06em; white-space: nowrap;
+    }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-100%)} }
+
+    .sb-footer {
+      background: #0d0d0d; border-top: 1px solid #1a1a1a;
+      padding: 8px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .dot-row { display: flex; gap: 4px; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: #2a2a2a; transition: background 0.3s; }
+    .dot.active { background: #EF9F27; }
+    .sb-nav { display: flex; gap: 8px; }
+    .nav-btn {
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      color: #888; font-family: 'Courier New', monospace;
+      font-size: 12px; width: 26px; height: 22px;
+      border-radius: 4px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.1s;
+    }
+    .nav-btn:hover { background: #222; color: #EF9F27; border-color: #EF9F27; }
+    .sb-count { font-family: 'Courier New', monospace; font-size: 10px; color: #555; letter-spacing: 0.1em; }
+
+    .saving-badge {
+      font-family: 'Courier New', monospace; font-size: 10px;
+      color: #3B6D11; letter-spacing: 0.08em;
+      padding: 2px 8px; background: #0f1f0a;
+      border: 1px solid #3B6D11; border-radius: 4px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .saving-badge.show { opacity: 1; }
+
+    /* 통계 */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; margin-bottom: 1.25rem;
+    }
+    .sc {
+      background: var(--bg2);
+      border-radius: var(--radius-md);
+      padding: 10px 12px; text-align: center;
+    }
+    .sc-n { font-size: 20px; font-weight: 500; color: var(--text); }
+    .sc-l { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+    /* 입력 영역 */
+    .input-section { margin-bottom: 1rem; }
+    .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .input-row textarea {
+      flex: 1; font-size: 14px; padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 52px; line-height: 1.5; resize: none;
+    }
+    .input-row textarea:focus {
+      outline: none;
+      border-color: #EF9F27;
+      box-shadow: 0 0 0 2px rgba(239,159,39,0.15);
+    }
+    .input-meta { display: flex; gap: 8px; justify-content: flex-end; }
+    .cat-select {
+      height: 36px; width: 140px; font-size: 13px; padding: 0 8px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      background: var(--bg); color: var(--text);
+      font-family: var(--font); cursor: pointer;
+    }
+    .send-btn {
+      height: 36px; padding: 0 16px; font-size: 13px; font-weight: 500;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border2);
+      background: var(--bg); color: var(--text);
+      cursor: pointer; white-space: nowrap; transition: background 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .send-btn:hover { background: var(--bg2); }
+    .send-btn:active { transform: scale(0.98); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* 필터 */
+    .filter-row {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 1rem; align-items: center;
+    }
+    .flabel { font-size: 12px; color: var(--text2); flex-shrink: 0; }
+    .chip {
+      font-size: 12px; padding: 4px 11px; border-radius: 999px;
+      border: 0.5px solid var(--border);
+      background: var(--bg2); color: var(--text2);
+      cursor: pointer; transition: all 0.12s; white-space: nowrap;
+    }
+    .chip.on {
+      background: #0a0a0a; border-color: #EF9F27; color: #EF9F27;
+      font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.05em;
+    }
+
+    /* 의견 목록 */
+    .list-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .op-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0.85rem 1rem;
+      display: flex; gap: 10px; align-items: flex-start;
+      animation: fadein 0.35s ease;
+      transition: border-color 0.15s;
+    }
+    @keyframes fadein { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+    .op-card:hover { border-color: var(--border2); }
+    .cat-pill {
+      font-size: 11px; padding: 3px 9px; border-radius: 999px;
+      white-space: nowrap; flex-shrink: 0; font-weight: 500; margin-top: 1px;
+      font-family: 'Courier New', monospace; letter-spacing: 0.04em;
+    }
+    .op-body { flex: 1; min-width: 0; }
+    .op-text { font-size: 14px; color: var(--text); line-height: 1.6; word-break: keep-all; }
+    .op-time { font-size: 11px; color: var(--text3); margin-top: 3px; }
+    .like-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text3); font-size: 13px;
+      padding: 4px 6px; border-radius: 6px;
+      display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+      transition: color 0.12s;
+    }
+    .like-btn:hover { color: var(--text); }
+    .like-btn.liked { color: #D4537E; }
+    .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 2rem; }
+    .loading-msg {
+      text-align: center; color: var(--text3); font-size: 13px;
+      padding: 2rem; font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 전광판 -->
+  <div class="scoreboard">
+    <div class="sb-header">
+      <div class="sb-title">ODA VOICE BOARD</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="saving-badge" id="saving-badge">SAVED</span>
+        <div class="sb-live"><div class="live-dot"></div>LIVE</div>
+      </div>
+    </div>
+    <div class="sb-ticker-area">
+      <div class="sb-cat-tag" id="sb-cat">로딩 중...</div>
+      <div class="sb-main-text" id="sb-text">데이터를 불러오는 중입니다</div>
+    </div>
+    <div class="sb-scroll-line">
+      <span class="sb-scroll-inner" id="scroll-bar">▶ ODA VOICE BOARD — 국제개발협력 여론 플랫폼</span>
+    </div>
+    <div class="sb-footer">
+      <div class="dot-row" id="dot-row"></div>
+      <div class="sb-nav">
+        <button class="nav-btn" id="prev-btn">◀</button>
+        <button class="nav-btn" id="next-btn">▶</button>
+      </div>
+      <div class="sb-count" id="sb-count">— OPINIONS</div>
+    </div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stats-row">
+    <div class="sc"><div class="sc-n" id="total-n">0</div><div class="sc-l">전체 의견</div></div>
+    <div class="sc"><div class="sc-n" id="today-n">0</div><div class="sc-l">오늘 의견</div></div>
+    <div class="sc"><div class="sc-n" id="top-cat-n">—</div><div class="sc-l">가장 많은 주제</div></div>
+  </div>
+
+  <!-- 입력 -->
+  <div class="input-section">
+    <div class="input-row">
+      <textarea id="op-input" placeholder="국제개발협력에 대한 의견을 남겨주세요 (Enter로 제출, Shift+Enter로 줄바꿈)" rows="2"></textarea>
+    </div>
+    <div class="input-meta">
+      <select class="cat-select" id="cat-sel">
+        <option value="거버넌스">거버넌스</option>
+        <option value="일자리/노동">일자리/노동</option>
+        <option value="기후/환경">기후/환경</option>
+        <option value="민관협력">민관협력</option>
+        <option value="평가/성과">평가/성과</option>
+        <option value="혁신/제도">혁신/제도</option>
+        <option value="기타">기타</option>
+      </select>
+      <button class="send-btn" id="send-btn">
+        <i class="ti ti-send"></i> 올리기
+      </button>
+    </div>
+  </div>
+
+  <!-- 필터 -->
+  <div class="filter-row">
+    <span class="flabel">필터</span>
+    <span class="chip on" data-f="전체">전체</span>
+    <span class="chip" data-f="거버넌스">거버넌스</span>
+    <span class="chip" data-f="일자리/노동">일자리/노동</span>
+    <span class="chip" data-f="기후/환경">기후/환경</span>
+    <span class="chip" data-f="민관협력">민관협력</span>
+    <span class="chip" data-f="평가/성과">평가/성과</span>
+    <span class="chip" data-f="혁신/제도">혁신/제도</span>
+    <span class="chip" data-f="기타">기타</span>
+  </div>
+
+  <!-- 목록 -->
+  <div class="list-wrap" id="list">
+    <div class="loading-msg">▌ 로딩 중...</div>
+  </div>
+
+</div>
+
+<script>
+  const CAT = {
+    '거버넌스':  { bg:'#0d1a2e', border:'#185FA5', text:'#85B7EB' },
+    '일자리/노동': { bg:'#16113a', border:'#534AB7', text:'#AFA9EC' },
+    '기후/환경':  { bg:'#0f1f0a', border:'#3B6D11', text:'#97C459' },
+    '민관협력':  { bg:'#041a12', border:'#0F6E56', text:'#5DCAA5' },
+    '평가/성과':  { bg:'#1f1200', border:'#854F0B', text:'#EF9F27' },
+    '혁신/제도':  { bg:'#1f0e07', border:'#993C1D', text:'#F0997B' },
+    '기타':      { bg:'#1a1a1a', border:'#444',    text:'#888' }
+  };
+
+  const STORAGE_KEY = 'oda-voice-opinions-v1';
+  let opinions = [];
+  let tickerIdx = 0;
+  let tickerTimer = null;
+  let activeFilter = '전체';
+
+  function timeStr(ts) {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return '방금 전';
+    if (diff < 3600) return Math.floor(diff / 60) + '분 전';
+    if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
+    return new Date(ts).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  }
+
+  function loadOpinions() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      opinions = raw ? JSON.parse(raw) : [];
+    } catch(e) { opinions = []; }
+    startTicker(); updateStats(); renderList();
+  }
+
+  function saveOpinions() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(opinions));
+      const badge = document.getElementById('saving-badge');
+      badge.classList.add('show');
+      setTimeout(() => badge.classList.remove('show'), 1500);
+    } catch(e) {}
+  }
+
+  function showTicker(idx) {
+    if (!opinions.length) {
+      document.getElementById('sb-cat').textContent = '대기 중';
+      document.getElementById('sb-text').textContent = '의견을 남기면 전광판에 표시됩니다';
+      document.getElementById('sb-count').textContent = '0 OPINIONS';
+      return;
+    }
+    const op = opinions[idx % opinions.length];
+    const c = CAT[op.cat] || CAT['기타'];
+    const catEl = document.getElementById('sb-cat');
+    const textEl = document.getElementById('sb-text');
+    catEl.style.opacity = '0'; textEl.style.opacity = '0';
+    setTimeout(() => {
+      catEl.textContent = op.cat.toUpperCase();
+      catEl.style.color = c.text;
+      textEl.textContent = op.text;
+      catEl.style.opacity = '1'; textEl.style.opacity = '1';
+    }, 250);
+    document.getElementById('sb-count').textContent = opinions.length + ' OPINIONS';
+    renderDots(idx % opinions.length);
+    updateScrollBar();
+  }
+
+  function renderDots(active) {
+    const row = document.getElementById('dot-row');
+    const max = Math.min(opinions.length, 8);
+    row.innerHTML = Array.from({ length: max }, (_, i) =>
+      `<div class="dot${i === active ? ' active' : ''}"></div>`
+    ).join('');
+  }
+
+  function updateScrollBar() {
+    const el = document.getElementById('scroll-bar');
+    if (!opinions.length) return;
+    const parts = opinions.slice(0, 8).map(o => o.text.substring(0, 24) + (o.text.length > 24 ? '...' : ''));
+    el.textContent = '▶ ' + parts.join('  |  ') + '  |  ';
+  }
+
+  function startTicker() {
+    if (tickerTimer) clearInterval(tickerTimer);
+    showTicker(tickerIdx);
+    tickerTimer = setInterval(() => { tickerIdx++; showTicker(tickerIdx); }, 4500);
+  }
+
+  function updateStats() {
+    document.getElementById('total-n').textContent = opinions.length;
+    const today = opinions.filter(o => new Date(o.ts).toDateString() === new Date().toDateString()).length;
+    document.getElementById('today-n').textContent = today;
+    if (opinions.length) {
+      const counts = {};
+      opinions.forEach(o => counts[o.cat] = (counts[o.cat] || 0) + 1);
+      const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+      document.getElementById('top-cat-n').textContent = top[0];
+    } else {
+      document.getElementById('top-cat-n').textContent = '—';
+    }
+  }
+
+  function renderList() {
+    const el = document.getElementById('list');
+    const filtered = activeFilter === '전체' ? opinions : opinions.filter(o => o.cat === activeFilter);
+    if (!filtered.length) { el.innerHTML = '<div class="empty">해당 카테고리의 의견이 없습니다</div>'; return; }
+    el.innerHTML = filtered.map(op => {
+      const c = CAT[op.cat] || CAT['기타'];
+      const gi = opinions.indexOf(op);
+      return `<div class="op-card">
+        <span class="cat-pill" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};">${op.cat}</span>
+        <div class="op-body">
+          <div class="op-text">${op.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+          <div class="op-time">${timeStr(op.ts)}</div>
+        </div>
+        <button class="like-btn${op.liked ? ' liked' : ''}" data-i="${gi}">
+          <i class="ti ti-heart"></i> ${op.likes}
+        </button>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = +btn.dataset.i;
+        opinions[i].liked = !opinions[i].liked;
+        opinions[i].likes += opinions[i].liked ? 1 : -1;
+        saveOpinions(); renderList();
+      });
+    });
+  }
+
+  function submit() {
+    const input = document.getElementById('op-input');
+    const cat = document.getElementById('cat-sel').value;
+    const text = input.value.trim();
+    if (!text) return;
+    const btn = document.getElementById('send-btn');
+    btn.disabled = true;
+    opinions.unshift({ text, cat, ts: Date.now(), likes: 0, liked: false });
+    input.value = '';
+    tickerIdx = 0;
+    saveOpinions(); startTicker(); updateStats(); renderList();
+    btn.disabled = false;
+  }
+
+  document.getElementById('send-btn').addEventListener('click', submit);
+  document.getElementById('op-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+  });
+  document.getElementById('prev-btn').addEventListener('click', () => { tickerIdx = Math.max(0, tickerIdx - 1); showTicker(tickerIdx); });
+  document.getElementById('next-btn').addEventListener('click', () => { tickerIdx++; showTicker(tickerIdx); });
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      activeFilter = c.dataset.f;
+      renderList();
+    });
+  });
+
+  loadOpinions();
+</script>
+</body>
+</html>
