@@ -305,6 +305,7 @@
 
   document.getElementById('send-btn').addEventListener('click', submit);
   document.getElementById('op-input').addEventListener('keydown', e => {
+    if (e.isComposing || e.keyCode === 229) return;
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
   });
   document.getElementById('prev-btn').addEventListener('click', () => { tickerIdx = Math.max(0, tickerIdx - 1); showTicker(tickerIdx); });
