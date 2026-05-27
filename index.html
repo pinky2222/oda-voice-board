@@ -125,12 +125,11 @@
     </div>
     <div class="input-meta">
       <select class="cat-select" id="cat-sel">
-        <option value="거버넌스">거버넌스</option>
-        <option value="일자리/노동">일자리/노동</option>
-        <option value="기후/환경">기후/환경</option>
-        <option value="민관협력">민관협력</option>
-        <option value="평가/성과">평가/성과</option>
-        <option value="혁신/제도">혁신/제도</option>
+        <option value="정책/거버넌스">정책/거버넌스</option>
+        <option value="현장/사업">현장/사업</option>
+        <option value="인력/생태계">인력/생태계</option>
+        <option value="재원/민간협력">재원/민간협력</option>
+        <option value="연구/지식">연구/지식</option>
         <option value="기타">기타</option>
       </select>
       <button class="send-btn" id="send-btn">
@@ -142,12 +141,11 @@
   <div class="filter-row">
     <span class="flabel">필터</span>
     <span class="chip on" data-f="전체">전체</span>
-    <span class="chip" data-f="거버넌스">거버넌스</span>
-    <span class="chip" data-f="일자리/노동">일자리/노동</span>
-    <span class="chip" data-f="기후/환경">기후/환경</span>
-    <span class="chip" data-f="민관협력">민관협력</span>
-    <span class="chip" data-f="평가/성과">평가/성과</span>
-    <span class="chip" data-f="혁신/제도">혁신/제도</span>
+    <span class="chip" data-f="정책/거버넌스">정책/거버넌스</span>
+    <span class="chip" data-f="현장/사업">현장/사업</span>
+    <span class="chip" data-f="인력/생태계">인력/생태계</span>
+    <span class="chip" data-f="재원/민간협력">재원/민간협력</span>
+    <span class="chip" data-f="연구/지식">연구/지식</span>
     <span class="chip" data-f="기타">기타</span>
   </div>
 
@@ -163,13 +161,12 @@
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const CAT = {
-    '거버넌스':  { bg:'#0d1a2e', border:'#185FA5', text:'#85B7EB' },
-    '일자리/노동': { bg:'#16113a', border:'#534AB7', text:'#AFA9EC' },
-    '기후/환경':  { bg:'#0f1f0a', border:'#3B6D11', text:'#97C459' },
-    '민관협력':  { bg:'#041a12', border:'#0F6E56', text:'#5DCAA5' },
-    '평가/성과':  { bg:'#1f1200', border:'#854F0B', text:'#EF9F27' },
-    '혁신/제도':  { bg:'#1f0e07', border:'#993C1D', text:'#F0997B' },
-    '기타':      { bg:'#1a1a1a', border:'#444',    text:'#888' }
+    '정책/거버넌스': { bg:'#0d1a2e', border:'#185FA5', text:'#85B7EB' },
+    '현장/사업':    { bg:'#16113a', border:'#534AB7', text:'#AFA9EC' },
+    '인력/생태계':  { bg:'#0f1f0a', border:'#3B6D11', text:'#97C459' },
+    '재원/민간협력': { bg:'#041a12', border:'#0F6E56', text:'#5DCAA5' },
+    '연구/지식':    { bg:'#1f1200', border:'#854F0B', text:'#EF9F27' },
+    '기타':        { bg:'#1a1a1a', border:'#444',    text:'#888' }
   };
 
   let opinions = [];
